@@ -1,0 +1,898 @@
+<!doctype html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Kitchen</title>
+<meta name="theme-color" content="#1F1D1B">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Kitchen">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#1F1D1B; --surface:#26231F; --raise:#2F2B27; --ink:#EDE6DA; --muted:#A79D8F; --faint:#6F675D; --line:#3C3732;
+  --brass:#C4A26A; --brass-ink:#1F1D1B; --brass-wash:rgba(196,162,106,.12); --ox:#7E2433; --ox-text:#D0727F; --ox-ink:#F3E9E4;
+  --serif:"Cormorant Garamond","Cormorant",Garamond,"Times New Roman",serif;
+  --sans:"Jost","Futura","Century Gothic",system-ui,sans-serif;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#ECEAE6; --surface:#F6F5F2; --raise:#E3E0DA; --ink:#24211E; --muted:#6A6259; --faint:#9A9188; --line:#D3CEC6;
+    --brass:#8A6630; --brass-ink:#F6F5F2; --brass-wash:rgba(138,102,48,.10); --ox:#7A1F2D; --ox-text:#8C2434; --ox-ink:#F7EEEA;
+    color-scheme:light;
+  }
+}
+:root[data-theme="light"]{
+  --bg:#ECEAE6; --surface:#F6F5F2; --raise:#E3E0DA; --ink:#24211E; --muted:#6A6259; --faint:#9A9188; --line:#D3CEC6;
+  --brass:#8A6630; --brass-ink:#F6F5F2; --brass-wash:rgba(138,102,48,.10); --ox:#7A1F2D; --ox-text:#8C2434; --ox-ink:#F7EEEA;
+  color-scheme:light;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.55 var(--sans);-webkit-font-smoothing:antialiased;min-height:100%;font-feature-settings:"kern"}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+::selection{background:var(--brass);color:var(--brass-ink)}
+:focus-visible{outline:2px solid var(--brass);outline-offset:3px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.num{font-variant-numeric:oldstyle-nums proportional-nums}
+
+/* ---------- boot ---------- */
+#boot{position:fixed;inset:0;display:grid;place-items:center;background:var(--bg);z-index:50}
+#boot .b{width:min(360px,80vw);text-align:center}
+#boot h1{font:500 56px/1 var(--serif);margin:0 0 6px;letter-spacing:.01em}
+#boot p{color:var(--muted);margin:0 0 22px;font-size:14px}
+.bar{height:1px;background:var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--brass);transition:width .4s}
+
+/* ---------- masthead ---------- */
+.top{max-width:1480px;margin:0 auto;padding:30px 28px 18px;border-bottom:1px solid var(--line)}
+.top h1{font:500 46px/.9 var(--serif);margin:0;letter-spacing:.005em}
+.top h1 span{display:block;font:400 14px/1.4 var(--sans);color:var(--muted);letter-spacing:.02em;margin-top:10px}
+.top .mark{width:46px;height:46px;flex:none;color:var(--brass)}
+.app{max-width:1480px;margin:0 auto;padding:28px 28px 120px;display:grid;gap:36px}
+@media (min-width:1120px){
+  .app{grid-template-columns:290px minmax(0,1fr) 380px;align-items:start;gap:40px;padding-bottom:60px}
+  .rail{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);max-height:calc(100vh - 40px);overflow:auto;scrollbar-width:thin}
+  .listcol{position:sticky;top:calc(env(safe-area-inset-top,0px) + 20px);max-height:calc(100vh - 40px);overflow:auto;scrollbar-width:thin}
+  .tabbar{display:none!important}
+}
+@media (max-width:1119px){
+  .app{grid-template-columns:minmax(0,1fr)}
+  body:not([data-tab="list"]) .listcol{display:none}
+  body[data-tab="list"] .rail, body[data-tab="list"] .plancol{display:none}
+}
+.panel{background:none;border:0;padding:0}
+.rail,.listcol{background:var(--surface);border:1px solid var(--line);border-radius:3px;padding:24px 22px}
+
+/* ---------- setup rail ---------- */
+.rail h2,.listcol h2{font:500 28px/1.1 var(--serif);margin:0}
+.field{margin:0;padding:18px 0;border-bottom:1px solid var(--line)}
+.field:last-of-type{border-bottom:0}
+.rail h2+.field{padding-top:14px}
+.field>label,.field>.lab{display:block;font-weight:500;font-size:14px;margin-bottom:10px;color:var(--ink)}
+.nights{display:grid;grid-template-columns:repeat(7,1fr);gap:0;border:1px solid var(--line);border-radius:2px}
+.nights button{border:0;border-left:1px solid var(--line);background:none;padding:8px 0 6px;font:500 21px/1 var(--serif);color:var(--muted)}
+.nights button:first-child{border-left:0}
+.nights button:hover{color:var(--ink)}
+.nights button[aria-pressed="true"]{background:var(--brass);color:var(--brass-ink)}
+.budget-out{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.budget-out b{font:500 34px/1 var(--serif)}
+.budget-out span{color:var(--muted);font-size:13px}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:22px;background:none}
+input[type=range]::-webkit-slider-runnable-track{height:1px;background:var(--faint)}
+input[type=range]::-moz-range-track{height:1px;background:var(--faint)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:16px;height:16px;border-radius:50%;background:var(--brass);margin-top:-7.5px;border:3px solid var(--surface);box-shadow:0 0 0 1px var(--brass)}
+input[type=range]::-moz-range-thumb{width:12px;height:12px;border-radius:50%;background:var(--brass);border:3px solid var(--surface);box-shadow:0 0 0 1px var(--brass)}
+.stepper{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:2px}
+.stepper button{width:36px;height:34px;border:0;background:none;font-size:18px;color:var(--muted)}
+.stepper button:hover{color:var(--brass)}
+.stepper output{min-width:30px;text-align:center;font:500 20px/1 var(--serif)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{border:1px solid var(--line);background:none;border-radius:2px;padding:5px 11px;font-size:13px;color:var(--muted)}
+.seg button:hover{color:var(--ink)}
+.seg button[aria-pressed="true"]{border-color:var(--brass);color:var(--brass);background:var(--brass-wash)}
+.check{display:flex;gap:10px;align-items:center;font-size:14px}
+input[type=checkbox]{-webkit-appearance:none;appearance:none;width:18px;height:18px;border:1px solid var(--faint);border-radius:2px;background:none;display:inline-grid;place-content:center;margin:0;flex:none;cursor:pointer}
+input[type=checkbox]::after{content:"";width:9px;height:5px;border-left:1.5px solid var(--brass-ink);border-bottom:1.5px solid var(--brass-ink);transform:rotate(-45deg) translate(1px,-1px);opacity:0}
+input[type=checkbox]:checked{background:var(--brass);border-color:var(--brass)}
+input[type=checkbox]:checked::after{opacity:1}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{display:inline-flex;align-items:center;gap:2px;border:1px solid var(--line);border-radius:2px;padding:2px 4px 2px 9px;font-size:13px}
+.chip button{border:0;background:none;padding:0 5px;font-size:15px;line-height:1;color:var(--muted)}
+.chip.inc{border-color:var(--brass)}
+.chip .hv{border:1px solid var(--line);border-radius:2px;padding:1px 7px;font-size:11.5px;font-weight:500;color:var(--muted);margin:0 2px 0 6px}
+.chip .hv[aria-pressed="true"]{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+.txt{width:100%;border:0;border-bottom:1px solid var(--faint);background:none;border-radius:0;padding:7px 2px;font-size:14px}
+.txt:focus{outline:none;border-bottom-color:var(--brass)}
+select.txt{border:1px solid var(--line);border-radius:2px;padding:7px 8px;background:var(--surface)}
+.mini{margin:-4px 0 10px;color:var(--muted);font-size:12.5px;line-height:1.5}
+.cuigrid{display:grid;grid-template-columns:auto 1fr auto;gap:6px 10px;align-items:center}
+.cuigrid>span:not(.outrow){font:500 19px/1 var(--serif);color:var(--brass);min-width:30px}
+.cuigrid select,.cusel{width:100%;border:1px solid var(--line);background:var(--surface);border-radius:2px;padding:5px 6px;font-size:13px;color:var(--ink)}
+.cuigrid .outrow{color:var(--ox-text);font:italic 500 16px/1 var(--serif);padding:6px 2px}
+.outbtn{border:1px solid var(--line);background:none;border-radius:2px;padding:4px 9px;font-size:12px;font-weight:500;color:var(--muted)}
+.outbtn[aria-pressed="true"]{background:var(--ox);border-color:var(--ox);color:var(--ox-ink)}
+.go{margin-top:20px;width:100%;border:1px solid var(--ox);border-radius:2px;background:var(--ox);color:var(--ox-ink);padding:13px;font-weight:500;font-size:15px;letter-spacing:.02em;transition:background .15s}
+.go:hover{background:color-mix(in srgb,var(--ox) 85%,#000)}
+.go:active{transform:translateY(1px)}
+.pantry-note{margin-top:18px;padding:14px 0 0;border-top:1px solid var(--line);font-size:13px;line-height:1.55;color:var(--muted)}
+.pantry-note b{display:block;font:500 18px/1.25 var(--serif);color:var(--ink);margin-bottom:4px}
+.linkbtn{border:0;background:none;padding:0;color:var(--brass);font-weight:500;text-decoration:underline;text-decoration-thickness:1px;text-underline-offset:3px}
+
+/* ---------- plan: headline ---------- */
+.plancol{min-width:0}
+.headline{margin:0 0 6px}
+.headline h2{font:500 clamp(38px,5vw,60px)/1.02 var(--serif);margin:0;letter-spacing:-.005em;text-wrap:balance}
+.headline .shop{display:block;color:var(--brass)}
+.facts{display:flex;flex-wrap:wrap;gap:6px 26px;margin:16px 0 0;font-size:14px;color:var(--muted)}
+.facts b{color:var(--ink);font-weight:500}
+.warn{margin-top:16px;padding:10px 14px;border-left:2px solid var(--ox-text);font-size:14px;color:var(--ink);background:var(--brass-wash)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:14px;margin:44px 0 6px;border-bottom:1px solid var(--line);padding-bottom:8px}
+.sec-h h3{font:500 26px/1.1 var(--serif);margin:0}
+.sec-h p{margin:0;color:var(--muted);font-size:13px;text-align:right;max-width:40ch}
+
+/* ---------- the score: signature element ---------- */
+.score{--n:5;margin-top:4px;position:relative}
+.sc-row,.sc-head{display:grid;grid-template-columns:minmax(110px,32%) 1fr;align-items:center}
+.sc-head{height:40px;color:var(--muted)}
+.sc-head .sc-track{height:100%}
+.sc-lab{position:absolute;top:0;transform:translateX(-50%);text-align:center;line-height:1.05}
+.sc-lab b{display:block;font:500 19px/1 var(--serif);color:var(--ink)}
+.sc-lab small{font-size:11px;color:var(--muted)}
+.sc-lab.out b{color:var(--ox-text);font-style:italic}
+.sc-row{height:34px;cursor:pointer}
+.sc-name{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:12px}
+.sc-name small{color:var(--faint);margin-left:6px;font-size:12px}
+.sc-track{position:relative;height:100%}
+.sc-row .sc-track::before{content:"";position:absolute;left:0;right:0;top:50%;height:1px;background:var(--line)}
+.score .bars{position:absolute;top:40px;bottom:0;right:0;pointer-events:none}
+.score .bars i{position:absolute;top:0;bottom:0;width:1px;background:var(--line);opacity:.6}
+.score .rest{position:absolute;top:40px;bottom:0;pointer-events:none;background:repeating-linear-gradient(135deg,transparent 0 5px,color-mix(in srgb,var(--ox-text) 16%,transparent) 5px 6px)}
+.slur{position:absolute;left:0;top:0;width:100%;height:100%;overflow:visible;pointer-events:none}
+.slur path{fill:none;stroke:var(--brass);stroke-width:1.4;opacity:.75;vector-effect:non-scaling-stroke}
+.note{position:absolute;top:50%;width:13px;height:9.5px;margin:-4.75px 0 0 -6.5px;border-radius:50%;transform:rotate(-22deg);background:var(--brass);box-shadow:0 0 0 2.5px var(--bg)}
+.sc-row.single .note{background:var(--bg);border:1.5px solid var(--muted);box-shadow:none}
+.sc-row:hover .sc-name{color:var(--brass)}
+.sc-row.hl .sc-name{color:var(--brass)}
+.sc-row.hl .note{transform:rotate(-22deg) scale(1.3)}
+.score.dim .sc-row:not(.hl){opacity:.35}
+.score-key{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:12.5px;color:var(--muted)}
+.score-key span{display:inline-flex;align-items:center;gap:7px}
+.score-key i{width:12px;height:9px;border-radius:50%;transform:rotate(-22deg);display:inline-block;background:var(--brass)}
+.score-key i.h{background:none;border:1.5px solid var(--muted)}
+.score-key i.r{border-radius:0;transform:none;width:14px;background:repeating-linear-gradient(135deg,transparent 0 3px,var(--ox-text) 3px 4px)}
+
+/* ---------- the programme of dinners ---------- */
+.days{margin:0}
+.day{display:grid;grid-template-columns:76px 1fr;gap:0 18px;padding:22px 0 20px;border-bottom:1px solid var(--line);position:relative;transition:background .2s}
+.day.hlday{background:linear-gradient(90deg,var(--brass-wash),transparent 70%)}
+.when{padding-top:2px}
+.when b{display:block;font:500 46px/.85 var(--serif);color:var(--brass);font-variant-numeric:lining-nums}
+.when span{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+.day h4{margin:0;font:500 27px/1.12 var(--serif);text-wrap:balance}
+.day h4 button{border:0;background:none;padding:0;text-align:left;font:inherit;color:inherit}
+.day h4 button:hover{color:var(--brass)}
+.meta{color:var(--muted);font-size:13px;margin-top:6px}
+.kept{display:inline-block;margin-left:10px;font:italic 500 15px/1 var(--serif);color:var(--brass);vertical-align:2px}
+.shares{margin-top:10px;font-size:13px;line-height:1.9}
+.shares span{display:inline-block;margin:0 14px 0 0;white-space:nowrap}
+.shares .s::before,.shares .n::before,.shares .h::before{content:"";display:inline-block;width:9px;height:7px;border-radius:50%;transform:rotate(-22deg);margin-right:6px;vertical-align:1px}
+.shares .s{color:var(--ink)}.shares .s::before{background:var(--brass)}
+.shares .n{color:var(--muted)}.shares .n::before{border:1.2px solid var(--muted)}
+.shares .h{color:var(--ox-text)}.shares .h::before{background:var(--ox-text)}
+.tip,.fresh-warn{font-size:13px;color:var(--ox-text);margin-top:6px;font-style:normal}
+.dayacts{grid-column:2;display:flex;align-items:center;gap:4px 18px;margin-top:14px;flex-wrap:wrap}
+.dayacts button{border:0;background:none;padding:2px 0;font-size:13px;font-weight:500;color:var(--muted);border-bottom:1px solid transparent}
+.dayacts button:hover{color:var(--brass);border-bottom-color:var(--brass)}
+.dayacts button[aria-pressed="true"]{color:var(--brass);border-bottom-color:var(--brass)}
+.dayacts .cusel{width:auto;padding:3px 4px;font-size:12.5px;color:var(--muted);border-color:var(--line)}
+.dayacts .cusel.set{color:var(--brass);border-color:var(--brass)}
+.dpp{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:12.5px;color:var(--muted)}
+.dpp .stepper button{width:28px;height:26px;font-size:15px}.dpp .stepper output{min-width:22px;font-size:17px}
+.day.out h4,.day.unplanned h4{color:var(--muted);font-style:italic}
+.day.out .when b{color:var(--ox-text);font-style:italic}
+.day.out{background:repeating-linear-gradient(135deg,transparent 0 9px,color-mix(in srgb,var(--ox-text) 7%,transparent) 9px 10px)}
+.day.unplanned .when b{color:var(--faint)}
+.listnote{color:var(--muted);font-size:12.5px;margin:8px 0 4px;line-height:1.55}
+.empty{padding:70px 0 40px;max-width:52ch}
+.empty b{display:block;color:var(--ink);font:500 46px/1.05 var(--serif);margin-bottom:16px}
+.empty span{color:var(--muted);font-size:15px}
+
+/* ---------- shopping list: a ledger with dot leaders ---------- */
+.listhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.listhead .money{font:500 30px/1 var(--serif);color:var(--brass)}
+.sec{margin-top:22px}
+.sec header{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--brass);padding-bottom:4px;margin-bottom:2px}
+.sec header h3{margin:0;font:500 20px/1.2 var(--serif)}
+.aisle{width:70px;border:0;border-bottom:1px dotted transparent;background:none;text-align:right;font-size:12px;color:var(--muted);padding:2px 0}
+.aisle:hover,.aisle:focus{border-bottom-color:var(--faint);outline:none}
+.row{display:grid;grid-template-columns:18px auto 1fr auto;gap:0 10px;padding:10px 0 9px;border-bottom:1px solid var(--line);align-items:baseline}
+.row input[type=checkbox]{align-self:center}
+.row label{cursor:pointer;min-width:0}
+.row .nm{font-weight:500;font-size:14.5px}
+.row .lead{border-bottom:1px dotted var(--faint);transform:translateY(-4px);min-width:12px}
+.row .pr{border:0;background:none;padding:0;font:500 17px/1 var(--serif);color:var(--ink)}
+.row .pr:hover{color:var(--brass)}
+.row .pr-in{width:70px;text-align:right;border:0;border-bottom:1px solid var(--brass);padding:2px;background:none}
+.row .dd{grid-column:2/5;font-size:12.5px;color:var(--muted);margin-top:2px}
+.row .dd em{font-style:normal;color:var(--ox-text)}
+.row.done .nm,.row.done .dd{text-decoration:line-through;text-decoration-color:var(--faint);opacity:.5}
+.row.done .pr{opacity:.5}
+.pantryuse{margin-top:26px;padding-top:12px;border-top:1px solid var(--line);font-size:13px;color:var(--muted);line-height:1.6}
+.pantryuse b{display:block;margin-bottom:4px;font:500 18px/1.2 var(--serif);color:var(--ink)}
+.listacts{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+.btn2{border:1px solid var(--line);background:none;border-radius:2px;padding:7px 13px;font-weight:500;font-size:13px;color:var(--ink)}
+.btn2:hover{border-color:var(--brass);color:var(--brass)}
+
+/* ---------- tab bar (mobile) ---------- */
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;padding:0 12px;padding-bottom:env(safe-area-inset-bottom,0px);background:color-mix(in srgb,var(--surface) 94%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);z-index:10}
+.tabbar button{flex:1;border:0;background:none;padding:15px 4px 13px;font-weight:500;font-size:14px;color:var(--muted);white-space:nowrap;border-top:2px solid transparent;margin-top:-1px}
+.tabbar button[aria-current="true"]{color:var(--brass);border-top-color:var(--brass)}
+
+/* ---------- sheets ---------- */
+dialog{border:1px solid var(--line);padding:0;background:var(--surface);color:var(--ink);border-radius:3px;width:min(680px,94vw);max-height:88vh;box-shadow:0 40px 100px rgba(0,0,0,.5)}
+dialog::backdrop{background:rgba(15,13,12,.62);backdrop-filter:blur(2px)}
+dialog[open]{animation:rise .22s ease-out}
+@keyframes rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+.sheet{display:flex;flex-direction:column;max-height:88vh}
+.sheet>header{display:flex;justify-content:space-between;align-items:start;gap:16px;padding:26px 28px 16px;border-bottom:1px solid var(--line)}
+.sheet>header h2{margin:0;font:500 34px/1.05 var(--serif);text-wrap:balance}
+.sheet>header p{margin:8px 0 0;color:var(--muted);font-size:13px;max-width:60ch}
+.x{border:1px solid var(--line);background:none;width:34px;height:34px;border-radius:50%;font-size:18px;flex:none;color:var(--muted)}
+.x:hover{color:var(--brass);border-color:var(--brass)}
+.sheet .body{overflow:auto;padding:12px 28px 28px}
+.sheet h3{font:500 22px/1.2 var(--serif);margin:22px 0 6px;color:var(--brass)}
+.ings{list-style:none;margin:0;padding:0;columns:2 260px;column-gap:28px}
+.ings li{padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;display:flex;gap:10px;justify-content:space-between;break-inside:avoid}
+.badge{flex:none;font-size:11px;padding:0 2px;align-self:center;white-space:nowrap;font-style:italic}
+.badge.p{color:var(--muted)}
+.badge.s{color:var(--brass)}
+ol.steps{padding-left:0;margin:0;list-style:none;counter-reset:st}
+ol.steps li{margin:0 0 14px;max-width:66ch;counter-increment:st;display:grid;grid-template-columns:34px 1fr;font-size:14.5px;line-height:1.65}
+ol.steps li::before{content:counter(st);font:500 22px/1.1 var(--serif);color:var(--brass)}
+.alts{list-style:none;margin:12px 0 0;padding:0}
+.alts li{border-bottom:1px solid var(--line)}
+.alts button{display:grid;grid-template-columns:1fr auto;gap:3px 16px;width:100%;text-align:left;border:0;background:none;padding:13px 2px}
+.alts button:hover .t{color:var(--brass)}
+.alts .t{font:500 21px/1.15 var(--serif)}
+.alts .d{font:500 18px/1 var(--serif);text-align:right;color:var(--muted)}
+.alts .d.neg{color:var(--brass)}
+.alts .w{grid-column:1/3;font-size:12.5px;color:var(--muted)}
+.pgroup{margin-top:18px}
+.pgroup h3{margin:0 0 4px}
+.prow{display:flex;align-items:center;gap:12px;padding:7px 0;border-bottom:1px solid var(--line);font-size:14px;cursor:pointer}
+.prow small{color:var(--faint);margin-left:auto;font-style:italic}
+.toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:2px;font-size:13.5px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:60;max-width:90vw;text-align:center}
+@media (min-width:1120px){.toast{bottom:28px}}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+@media (max-width:560px){
+  .top{padding:20px 16px 14px}.top h1{font-size:38px}.top .mark{width:36px;height:36px}
+  .app{padding:20px 16px 110px}
+  .rail,.listcol{padding:20px 16px}
+  .day{grid-template-columns:52px 1fr;gap:0 12px}
+  .when b{font-size:38px}
+  .day h4{font-size:23px}
+  .dpp{margin-left:0}
+  .sc-row,.sc-head{grid-template-columns:minmax(96px,36%) 1fr}
+  .sc-name{font-size:13px}
+  .sec-h{flex-direction:column;align-items:flex-start}.sec-h p{text-align:left}
+  .sheet>header{padding:20px 18px 12px}.sheet .body{padding:10px 18px 22px}.sheet>header h2{font-size:28px}
+}
+</style>
+</head>
+<body data-tab="plan">
+<div id="boot"><div class="b"><h1>The Kitchen</h1><p id="bootmsg">Unpacking recipes…</p><div class="bar"><i id="bootbar"></i></div></div></div>
+
+<header class="top"><h1>The Kitchen<span>One shop, a run of dinners, nothing wasted</span></h1></header>
+
+<main class="app">
+  <section class="rail panel" aria-labelledby="setupH">
+    <h2 id="setupH">Plan the shop</h2>
+    <div class="field">
+      <span class="lab" id="nLab">Nights this shop covers</span>
+      <div class="nights" role="group" aria-labelledby="nLab" id="nights"></div>
+    </div>
+    <div class="field">
+      <label for="budget">Rough spend on ingredients</label>
+      <div class="budget-out"><b id="budgetOut">$50</b><span id="budgetPer">about $10 a dinner</span></div>
+      <input type="range" id="budget" min="4" max="40" step="1" value="10" aria-describedby="budgetPer">
+    </div>
+    <div class="field">
+      <span class="lab" id="pLab">Cooking for</span>
+      <div class="stepper" role="group" aria-labelledby="pLab"><button type="button" id="pMinus" aria-label="Fewer people">−</button><output id="pOut">2</output><button type="button" id="pPlus" aria-label="More people">+</button></div>
+    </div>
+    <div class="field">
+      <span class="lab" id="dLab">Eating</span>
+      <div class="seg" role="group" aria-labelledby="dLab" id="diet"></div>
+    </div>
+    <div class="field">
+      <label class="check"><input type="checkbox" id="quick"> Short recipes only</label>
+    </div>
+    <div class="field">
+      <label for="avoidIn">Leave out</label>
+      <input class="txt" id="avoidIn" list="itemList" placeholder="e.g. mushrooms" autocomplete="off">
+      <datalist id="itemList"></datalist>
+      <div class="chips" id="avoidChips"></div>
+    </div>
+    <div class="field">
+      <label for="incIn">Include</label>
+      <p class="mini">Things you already have, or want to use up. “Have it” means it's free and stays off the list; “Buying” means it goes on the list but the plan builds around it.</p>
+      <input class="txt" id="incIn" list="allItems" placeholder="e.g. chicken thigh, spinach" autocomplete="off">
+      <datalist id="allItems"></datalist>
+      <div class="chips" id="incChips"></div>
+    </div>
+    <div class="field">
+      <label for="startSel">Name the nights</label>
+      <select class="txt" id="startSel"></select>
+    </div>
+    <div class="field">
+      <span class="lab">Each night</span>
+      <p class="mini">Pick a cuisine or leave it to the planner. Mark nights you're out: there's no dinner that night, and later dinners are planned knowing the food has sat in the fridge longer.</p>
+      <div class="cuigrid" id="cuiGrid"></div>
+    </div>
+    <button class="go" id="planBtn" type="button">Plan my dinners</button>
+    <div class="pantry-note" id="pantryNote"></div>
+  </section>
+
+  <section class="plancol" aria-labelledby="planH">
+    <div class="panel" id="planPanel"></div>
+  </section>
+
+  <section class="listcol panel" aria-labelledby="listH" id="listPanel"></section>
+</main>
+
+<nav class="tabbar" aria-label="Views">
+  <button type="button" data-tabbtn="plan" aria-current="true">Dinners</button>
+  <button type="button" data-tabbtn="list" aria-current="false">Shopping list</button>
+  <button type="button" data-tabbtn="pantry" aria-current="false">Pantry</button>
+</nav>
+
+<dialog id="dlgRecipe"><div class="sheet" id="recipeSheet"></div></dialog>
+<dialog id="dlgSwap"><div class="sheet" id="swapSheet"></div></dialog>
+<dialog id="dlgPantry"><div class="sheet" id="pantrySheet"></div></dialog>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script id="items" type="application/json">__ITEMS__</script>
+<script id="data" type="text/plain">__DATA__</script>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money=v=>"$"+(Math.round(v*100)/100).toFixed(2);
+const money0=v=>"$"+Math.round(v);
+const ITEMS=JSON.parse($("#items").textContent);
+const NI=ITEMS.length; const IDX={}; ITEMS.forEach((it,i)=>IDX[it.id]=i);
+const SECTIONS=["Fruit & veg","Fresh herbs","Meat","Seafood","Deli","Dairy & eggs","Bakery","Pasta, rice & grains","Cans & jars","International","Frozen","Pantry staples","Spices","Wine & beer"];
+const MEAT=new Set(["chickthigh","chickbreast","mince","porkmince","beefsteak","beefstew","lamb","pork","sausage","bacon"]);
+const PORK=new Set(["pork","porkmince","bacon"]);
+const PROT_NAME={chickthigh:"chicken",chickbreast:"chicken",mince:"mince",porkmince:"pork mince",beefsteak:"beef",beefstew:"beef",lamb:"lamb",pork:"pork",sausage:"sausages",whitefish:"fish",salmon:"salmon",prawn:"prawns",mussels:"seafood",tofu:"tofu",paneer:"paneer",pasta:"pasta",asiannoodle:"noodles",lentils:"lentils",chickpea:"chickpeas",beans:"beans",grains:"grains",egg:"eggs"};
+const CUISINES=[["indian","Indian"],["chinese","Chinese"],["japanese","Japanese"],["korean","Korean"],["thai","Thai"],["vietnamese","Vietnamese"],["seasian","Malaysian, Indonesian & Filipino"],["italian","Italian"],["french","French"],["med","Mediterranean & Middle Eastern"],["latin","Mexican & Latin American"],["american","American"],["british","British, Irish & Aussie"]];
+const CUNAME=Object.fromEntries(CUISINES);
+const cuOptions=sel=>`<option value="">Any cuisine</option>`+CUISINES.map(([k,l])=>`<option value="${k}" ${k===sel?"selected":""}>${l}</option>`).join("");
+const KEY="kitchen-dinner-planner-v1";
+let R=[];
+
+/* ---------- state ---------- */
+const DEF={nights:5,perDinner:10,people:2,ppl:[],cui:[],out:[],start:"n",include:[],diet:"any",quick:false,avoid:[],pantry:{},prices:{},aisles:{},plan:[],locks:[],ticks:{}};
+let S=load();
+function load(){try{const v=JSON.parse(localStorage.getItem(KEY)||"null");return Object.assign({},DEF,v||{})}catch(e){return Object.assign({},DEF)}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+const inPantry=i=>{const v=S.pantry[ITEMS[i].id];return v===undefined?!!ITEMS[i].p:v};
+const priceOf=i=>{const v=S.prices[ITEMS[i].id];return (typeof v==="number"&&v>=0)?v:ITEMS[i].c};
+const isOut=d=>!!(S.out&&S.out[d]);
+const cookCount=()=>{let n=0;for(let d=0;d<S.nights;d++)if(!isOut(d))n++;return n};
+const budget=()=>S.perDinner*cookCount();
+const cuOf=d=>(S.cui&&S.cui[d])||"";
+const ppOf=d=>(S.ppl&&S.ppl[d])||S.people;
+const haveSet=()=>new Set(S.include.filter(x=>x.have).map(x=>IDX[x.id]));
+
+/* ---------- boot ---------- */
+async function boot(){
+  const bar=$("#bootbar"),msg=$("#bootmsg");
+  try{
+    bar.style.width="15%";
+    const b64=$("#data").textContent.trim();
+    const bin=atob(b64); const u8=new Uint8Array(bin.length);
+    for(let i=0;i<bin.length;i++)u8[i]=bin.charCodeAt(i);
+    bar.style.width="40%";
+    let text;
+    if(typeof DecompressionStream!=="undefined"){
+      const st=new Blob([u8]).stream().pipeThrough(new DecompressionStream("gzip"));
+      text=await new Response(st).text();
+    }else{
+      await new Promise((res,rej)=>{const s=document.createElement("script");s.src="https://cdnjs.cloudflare.com/ajax/libs/pako/2.1.0/pako.min.js";s.onload=res;s.onerror=rej;document.head.appendChild(s)});
+      text=window.pako.ungzip(u8,{to:"string"});
+    }
+    bar.style.width="75%";
+    const raw=JSON.parse(text);
+    R=raw.map((r,ix)=>{const ks=Object.keys(r.u);const ui=new Int16Array(ks.length),ua=new Float32Array(ks.length);
+      ks.forEach((k,j)=>{ui[j]=IDX[k];ua[j]=r.u[k]});
+      return {ix,n:r.n,src:r.src,i:r.i,m:r.m,s:r.s,sv:r.sv,ty:r.ty,pr:r.pr,dt:r.dt,cu:r.cu||"",ui,ua,lc:r.n.toLowerCase(),okq:quality(ui,ua,r.n.toLowerCase())}});
+    bar.style.width="100%";
+    msg.textContent=R.length.toLocaleString()+" dinners ready";
+  }catch(e){msg.textContent="Couldn't unpack the recipe data in this browser. Try a current Chrome, Safari or Firefox.";console.error(e);return}
+  setTimeout(()=>$("#boot").remove(),250);
+  initControls(); renderAll();
+}
+
+/* ---------- pool & planner ---------- */
+const VEGSEC=new Set(["Fruit & veg","Fresh herbs"]);
+// minimum per-serving amount for something to count as the dinner's protein
+const PMIN={chickthigh:90,chickbreast:90,mince:80,porkmince:80,beefsteak:90,beefstew:90,lamb:90,pork:90,sausage:70,bacon:70,whitefish:80,salmon:80,prawn:60,tuna:50,mussels:120,tofu:70,paneer:50,chickpea:70,beans:70,lentils:30,egg:1};
+const CARB=new Set(["pasta","asiannoodle","grains","potato","sweetpotato","tortilla","bread"]);
+const MAINWORD=/soup|stew|curry|chil[il]i|risotto|biryani|pulao|pilaf|khichdi|fried rice|rice bowl|dal|dhal|daal|sambar|paella|jambalaya|gumbo|pie|lasagn|bake|casserole|frittata|omelet|tart|pizza|noodle|pasta/;
+function quality(ui,ua,title){let buy=0,veg=0,prot=false,carb=false;
+  for(let j=0;j<ui.length;j++){const it=ITEMS[ui[j]];if(it.p)continue;buy++;
+    if(VEGSEC.has(it.s)||it.id==="peasfz")veg++;
+    if(PMIN[it.id]!==undefined&&ua[j]>=PMIN[it.id])prot=true;
+    if(CARB.has(it.id))carb=true}
+  if(buy<3||veg<1)return false;
+  if(prot)return true;
+  return veg>=3&&(carb||MAINWORD.test(title))}
+let POOL=[],INV=null,INCL=[],CUPOOL={},PAN=new Uint8Array(NI),PRICE=new Float64Array(NI);
+let HAVE=new Uint8Array(NI),INC=[];
+function refreshTables(){const hv=haveSet();INC=S.include.map(x=>IDX[x.id]).filter(i=>i!==undefined);
+  for(let i=0;i<NI;i++){HAVE[i]=hv.has(i)?1:0;PAN[i]=(inPantry(i)||HAVE[i])?1:0;PRICE[i]=priceOf(i)}}
+function standalone(r){let c=0;for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(PAN[i])continue;c+=r.ua[j]*S.people/ITEMS[i].k*PRICE[i]}return c}
+function buildPool(){
+  refreshTables();
+  const avoid=new Set(S.avoid.map(id=>IDX[id]).filter(i=>i!==undefined));
+  const cap=S.perDinner*2.4+4;
+  POOL=[];
+  for(const r of R){
+    if(S.diet==="veg"&&r.dt!=="v")continue;
+    if(S.diet==="pesc"&&r.dt==="m")continue;
+    if(S.quick&&(r.s.length>6||r.i.length>11))continue;
+    let bad=false;
+    for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(avoid.has(i)){bad=true;break}if(S.diet==="nopork"&&PORK.has(ITEMS[i].id)){bad=true;break}}
+    if(bad)continue;
+    r.cs=standalone(r);
+    if(r.cs>cap)continue;
+    if(!r.okq)continue;
+    POOL.push(r.ix);
+  }
+  CUPOOL={};for(const ix of POOL){const c=R[ix].cu;if(c)(CUPOOL[c]=CUPOOL[c]||[]).push(ix)}
+  INV=Array.from({length:NI},()=>[]);INCL=INC.map(()=>[]);
+  for(const ix of POOL){const r=R[ix];INC.forEach((i,k)=>{if(r.ui.includes(i))INCL[k].push(ix)})}
+  for(const ix of POOL){const r=R[ix];for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(!PAN[i]&&ITEMS[i].l<60&&!ITEMS[i].f)INV[i].push(ix)}}
+}
+const need=new Float64Array(NI),cnt=new Int32Array(NI),stamp=new Int32Array(NI);let ST=0;
+// slots: array indexed by day, recipe index or null; people per day come from ppOf(day)
+function evaluate(slots,detail){
+  ST++;const touched=[];const list=[];let incMiss=0,spoil=0;
+  const incUsed=INC.length?new Uint8Array(INC.length):null;
+  for(let d=0;d<slots.length;d++){const ix=slots[d];if(ix==null)continue;list.push(ix);const P=ppOf(d);const r=R[ix];
+    if(incUsed)for(let k=0;k<INC.length;k++)if(!incUsed[k]&&r.ui.includes(INC[k]))incUsed[k]=1;
+    for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(PAN[i])continue;
+      {const it=ITEMS[i];if(!it.f&&it.l<60&&d>=it.l)spoil+=1+(d-it.l)*0.5}
+    if(stamp[i]!==ST){stamp[i]=ST;need[i]=0;cnt[i]=0;touched.push(i)}need[i]+=r.ua[j]*P;cnt[i]++}}
+  let cost=0,keep=0,waste=0,shared=0,fresh=0;const lines=detail?[]:null;
+  for(const i of touched){const it=ITEMS[i];const pk=it.k;let packs=Math.ceil(need[i]/pk-0.08);if(packs<1)packs=1;
+    const pr=PRICE[i];cost+=packs*pr;const left=Math.max(0,packs*pk-need[i]);const v=left/pk*pr;
+    const keeps=it.l>=60||!!it.f;
+    if(keeps)keep+=v;else{waste+=v;fresh++;if(cnt[i]>1)shared++}
+    if(detail)lines.push({i,need:need[i],packs,cost:packs*pr,left,leftVal:v,keeps,uses:cnt[i]});
+  }
+  let pen=0;const n=list.length;
+  if(incUsed)for(let k=0;k<INC.length;k++)if(!incUsed[k])incMiss++;
+  pen+=incMiss*9+spoil*3;
+  if(n>1){const ty={},pr={},combo={};const maxTy=Math.max(1,Math.ceil(n/3.5)),maxPr=Math.max(2,Math.ceil(n/2.5));
+    for(const ix of list){const r=R[ix];if(r.ty!=="Other")ty[r.ty]=(ty[r.ty]||0)+1;if(r.pr){const k=PROT_NAME[r.pr]||r.pr;pr[k]=(pr[k]||0)+1;const c=k+"|"+r.ty;combo[c]=(combo[c]||0)+1}}
+    for(const k in combo)if(combo[k]>1)pen+=2.5*(combo[k]-1);
+    for(const k in ty)if(ty[k]>maxTy)pen+=4*(ty[k]-maxTy);
+    for(const k in pr)if(pr[k]>maxPr)pen+=3*(pr[k]-maxPr);
+  }
+  const B=S.perDinner*Math.max(1,n);const eaten=cost-keep-waste;
+  if(cost>B)pen+=(cost-B)*3;
+  if(eaten<0.8*B)pen+=(0.8*B-eaten)*1.6;
+  const obj=cost-0.5*keep+1.3*waste+pen-0.6*shared;
+  return detail?{obj,cost,keep,waste,shared,fresh,lines,incMiss,spoil}:obj;
+}
+function rnd(a){return a[(Math.random()*a.length)|0]}
+function candidates(slots,k,cu){
+  if(cu)return cuCandidates(slots,k,cu);
+  const list=slots.filter(x=>x!=null);
+  const out=new Set();const inList=new Set(list);
+  INCL.forEach(arr=>{if(!arr.length)return;for(let t=0;t<Math.ceil(k*0.25/Math.max(1,INCL.length));t++){const ix=rnd(arr);if(!inList.has(ix))out.add(ix)}});
+  const fresh=[];for(const ix of list){const r=R[ix];for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(INV[i]&&INV[i].length)fresh.push(i)}}
+  let guard=0;const kShare=fresh.length?Math.floor(k*0.65):0;
+  while(out.size<kShare+INC.length*3&&guard++<k*4){const arr=INV[rnd(fresh)];const ix=rnd(arr);if(!inList.has(ix))out.add(ix)}
+  guard=0;while(out.size<k&&guard++<k*4){const ix=rnd(POOL);if(!inList.has(ix))out.add(ix)}
+  return [...out];
+}
+// candidates restricted to one cuisine, still preferring ones that share ingredients with the plan
+function cuCandidates(slots,k,cu){
+  const arr=CUPOOL[cu]||[];const inList=new Set(slots.filter(x=>x!=null));
+  if(arr.length<=k*1.5)return arr.filter(ix=>!inList.has(ix));
+  const fresh=new Set();for(const ix of inList)for(const i of R[ix].ui)if(!PAN[i])fresh.add(i);
+  const incs=new Set(INC);
+  const share=[],rest=[];
+  for(const ix of arr){if(inList.has(ix))continue;let hit=false;for(const i of R[ix].ui)if(fresh.has(i)||incs.has(i)){hit=true;break}(hit?share:rest).push(ix)}
+  const out=new Set();let g=0;
+  while(out.size<Math.min(share.length,Math.floor(k*0.7))&&g++<k*4)out.add(rnd(share));
+  g=0;while(out.size<k&&g++<k*4&&(rest.length||share.length))out.add(rnd(rest.length?rest:share));
+  return [...out];
+}
+function makePlan(){
+  buildPool();
+  const N=S.nights;
+  if(cookCount()===0){toast("Every night is marked as out, so there's nothing to plan");return false}
+  if(POOL.length<N){toast("Not enough recipes match those settings. Try loosening them.");return false}
+  const missingCu=[];for(let d=0;d<N;d++){const c=cuOf(d);if(c&&!(CUPOOL[c]||[]).length){missingCu.push(CUNAME[c]);S.cui[d]=""}}
+  if(missingCu.length)setTimeout(()=>toast(`No ${[...new Set(missingCu)].join(" or ")} dinners fit your other settings, so those nights are open`),500);
+  const fixed=Array(N).fill(null);
+  for(let d=0;d<N;d++){if(S.locks[d]&&S.plan[d]!=null&&!isOut(d))fixed[d]=S.plan[d]}
+  let best=null,bestObj=Infinity;
+  const restarts=N<=2?6:9;
+  for(let t=0;t<restarts;t++){
+    const cur=fixed.slice();
+    const free=[];for(let d=0;d<N;d++)if(cur[d]==null&&!isOut(d))free.push(d);
+    for(const d of free){
+      const cs=candidates(cur,240,cuOf(d));
+      const scored=cs.map(c=>{const tr=cur.slice();tr[d]=c;return [evaluate(tr),c]}).sort((a,b)=>a[0]-b[0]);
+      const pickFrom=Math.min(scored.length,t===0?1:5);
+      cur[d]=scored[(Math.random()*pickFrom)|0][1];
+    }
+    for(let pass=0;pass<3;pass++){
+      let improved=false;
+      for(const d of free){
+        let curObj=evaluate(cur);
+        const others=cur.slice();others[d]=null;
+        for(const c of candidates(others,170,cuOf(d))){
+          if(cur.includes(c))continue;
+          const tr=cur.slice();tr[d]=c;const o=evaluate(tr);
+          if(o<curObj-1e-6){cur[d]=c;curObj=o;improved=true}
+        }
+      }
+      if(!improved)break;
+    }
+    const o=evaluate(cur);
+    if(o<bestObj){bestObj=o;best=cur}
+  }
+  // order: most perishable first, but only swap between unlocked days with no cuisine set that cook for the same number
+  const free=[];for(let d=0;d<N;d++)if(fixed[d]==null&&!isOut(d))free.push(d);
+  const groups={};free.filter(d=>!cuOf(d)).forEach(d=>(groups[ppOf(d)]=groups[ppOf(d)]||[]).push(d));
+  {const before=best.slice();const ob=evaluate(before);
+   for(const g of Object.values(groups)){const mv=g.map(d=>best[d]).sort((a,b)=>urgency(a)-urgency(b));g.forEach((d,j)=>best[d]=mv[j])}
+   if(evaluate(best)>ob+1e-6)best=before}
+  S.plan=best;S.locks=Array.from({length:N},(_,d)=>!!(S.locks[d]&&fixed[d]!=null));S.ticks={};SIMSEEN={};
+  const ev=evaluate(best);const miss=evaluate(best,true).incMiss;
+  if(miss)setTimeout(()=>toast(miss===1?"One of your “include” ingredients didn't fit any dinner in these settings":miss+" of your “include” ingredients didn't fit these settings"),400);
+  save();return true;
+}
+function urgency(ix){const r=R[ix];let m=60;for(let j=0;j<r.ui.length;j++){const it=ITEMS[r.ui[j]];if(PAN[r.ui[j]]||it.f)continue;if(it.l<m)m=it.l}return m}
+
+/* ---------- controls ---------- */
+const DIETS=[["any","Anything"],["pesc","Pescatarian"],["veg","Vegetarian"],["nopork","No pork"]];
+function initControls(){
+  const nb=$("#nights");
+  for(let n=1;n<=7;n++){const b=document.createElement("button");b.type="button";b.textContent=n;b.setAttribute("aria-label",n+(n===1?" night":" nights"));b.onclick=()=>{S.nights=n;S.out=(S.out||[]).slice(0,n);while(S.plan.length&&S.plan.length<n)S.plan.push(null);S.plan=S.plan.slice(0,n);S.locks=S.locks.slice(0,n);save();syncControls();if(S.plan.length)renderAll()};nb.appendChild(b)}
+  const bud=$("#budget");bud.oninput=()=>{S.perDinner=+bud.value;save();syncControls()};
+  $("#pMinus").onclick=()=>{S.people=Math.max(1,S.people-1);save();syncControls();if(S.plan.length)renderAll()};
+  $("#pPlus").onclick=()=>{S.people=Math.min(8,S.people+1);save();syncControls();if(S.plan.length)renderAll()};
+  const dg=$("#diet");
+  DIETS.forEach(([k,l])=>{const b=document.createElement("button");b.type="button";b.textContent=l;b.dataset.k=k;b.onclick=()=>{S.diet=k;save();syncControls()};dg.appendChild(b)});
+  $("#quick").onchange=e=>{S.quick=e.target.checked;save()};
+  const dl=$("#itemList");dl.innerHTML=ITEMS.filter(it=>!it.p).map(it=>`<option value="${esc(it.n)}">`).join("");
+  const ai=$("#avoidIn");
+  const addAvoid=()=>{const v=ai.value.trim().toLowerCase();if(!v)return;const it=ITEMS.find(x=>x.n.toLowerCase()===v)||ITEMS.find(x=>x.n.toLowerCase().includes(v));
+    if(!it){toast("No ingredient called “"+ai.value+"”");return}
+    if(!S.avoid.includes(it.id))S.avoid.push(it.id);S.include=S.include.filter(x=>x.id!==it.id);ai.value="";save();syncControls()};
+  ai.addEventListener("change",addAvoid);ai.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addAvoid()}});
+  $("#allItems").innerHTML=ITEMS.map(it=>`<option value="${esc(it.n)}">`).join("");
+  const ii=$("#incIn");
+  const addInc=()=>{const v=ii.value.trim().toLowerCase();if(!v)return;const it=ITEMS.find(x=>x.n.toLowerCase()===v)||ITEMS.find(x=>x.n.toLowerCase().includes(v));
+    if(!it){toast("No ingredient called “"+ii.value+"”");return}
+    if(!S.include.some(x=>x.id===it.id))S.include.push({id:it.id,have:true});
+    S.avoid=S.avoid.filter(x=>x!==it.id);ii.value="";save();syncControls();if(S.plan.length)renderAll()};
+  ii.addEventListener("change",addInc);ii.addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();addInc()}});
+  $("#startSel").onchange=e=>{S.start=e.target.value;save();syncControls();renderAll()};
+  $("#planBtn").onclick=()=>{const b=$("#planBtn");b.textContent="Planning…";b.disabled=true;
+    setTimeout(()=>{const ok=makePlan();b.disabled=false;syncControls();if(ok){renderAll();if(innerWidth<1100)scrollTo({top:$(".plancol").offsetTop-10,behavior:"smooth"})}},30)};
+  document.querySelectorAll("[data-tabbtn]").forEach(b=>b.onclick=()=>{const t=b.dataset.tabbtn;if(t==="pantry"){openPantry();return}setTab(t)});
+  document.querySelectorAll("dialog").forEach(d=>d.addEventListener("click",e=>{if(e.target===d)d.close()}));
+  syncControls();
+}
+function setTab(t){document.body.dataset.tab=t;document.querySelectorAll("[data-tabbtn]").forEach(b=>b.setAttribute("aria-current",String(b.dataset.tabbtn===t)));scrollTo({top:0})}
+function syncControls(){
+  document.querySelectorAll("#nights button").forEach((b,i)=>b.setAttribute("aria-pressed",String(i+1===S.nights)));
+  $("#budget").value=S.perDinner;
+  $("#budgetOut").textContent=money0(budget());
+  $("#budgetPer").textContent="about "+money0(S.perDinner)+" a dinner";
+  $("#pOut").textContent=S.people;
+  document.querySelectorAll("#diet button").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.k===S.diet)));
+  $("#quick").checked=S.quick;
+  $("#avoidChips").innerHTML=S.avoid.map(id=>{const it=ITEMS[IDX[id]];return it?`<span class="chip">${esc(it.n)}<button type="button" aria-label="Stop leaving out ${esc(it.n)}" data-rm="${id}">×</button></span>`:""}).join("");
+  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{S.avoid=S.avoid.filter(x=>x!==b.dataset.rm);save();syncControls()});
+  $("#incChips").innerHTML=S.include.map(x=>{const it=ITEMS[IDX[x.id]];return it?`<span class="chip inc">${esc(it.n)}<button type="button" class="hv" data-hv="${x.id}" aria-pressed="${x.have}">${x.have?"Have it":"Buying"}</button><button type="button" aria-label="Remove ${esc(it.n)}" data-rminc="${x.id}">×</button></span>`:""}).join("");
+  document.querySelectorAll("[data-hv]").forEach(b=>b.onclick=()=>{const x=S.include.find(y=>y.id===b.dataset.hv);x.have=!x.have;save();syncControls();if(S.plan.length)renderAll()});
+  document.querySelectorAll("[data-rminc]").forEach(b=>b.onclick=()=>{S.include=S.include.filter(x=>x.id!==b.dataset.rminc);save();syncControls();if(S.plan.length)renderAll()});
+  $("#startSel").innerHTML=startOptions();
+  $("#cuiGrid").innerHTML=Array.from({length:S.nights},(_,d)=>{const L=dayLabel(d);return `<span>${(S.start||"n")==="n"?L.big:L.name}</span>${isOut(d)?`<span class="outrow">Out, no dinner</span>`:`<select data-cu="${d}" aria-label="Cuisine for ${L.name}">${cuOptions(cuOf(d))}</select>`}<button type="button" class="outbtn" data-out="${d}" aria-pressed="${isOut(d)}" aria-label="${L.name}: going out">Out</button>`}).join("");
+  document.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>setOut(+b.dataset.out,!isOut(+b.dataset.out)));
+  document.querySelectorAll("#cuiGrid [data-cu]").forEach(sel=>sel.onchange=()=>setCuisine(+sel.dataset.cu,sel.value));
+  $("#planBtn").textContent=S.plan.length?"Re-plan unlocked dinners":"Plan my dinners";
+  const pc=ITEMS.filter((_,i)=>inPantry(i));
+  const sample=["Salt","Olive oil","Soy sauce","Rice","Stock cubes / powder","Butter"].filter(n=>pc.some(it=>it.n===n));
+  $("#pantryNote").innerHTML=`<b>Assumes ${pc.length} things are already in your pantry</b>${esc(sample.join(", ").toLowerCase())}, the spice rack and more aren't on the list or in the price. <button type="button" class="linkbtn" id="pantryBtn">Check the pantry list</button>`;
+  $("#pantryBtn").onclick=openPantry;
+}
+
+/* ---------- dates ---------- */
+const WD=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+function startDate(){const t=new Date();t.setHours(12,0,0,0);const st=S.start||"n";
+  if(st==="t1")t.setDate(t.getDate()+1);
+  else if(st[0]==="w"){const w=+st.slice(1);t.setDate(t.getDate()+((w-t.getDay()+7)%7))}
+  return t}
+function dayLabel(d){
+  if((S.start||"n")==="n")return {name:"Night "+(d+1),big:String(d+1),small:"night",h1:"Night",h2:String(d+1)};
+  const t=startDate();t.setDate(t.getDate()+d);const w=WD[t.getDay()];
+  return {name:w,big:w,small:String(t.getDate()),h1:w,h2:String(t.getDate())}}
+function startOptions(){const t=new Date();const td=WD[t.getDay()],tm=WD[(t.getDay()+1)%7];const st=S.start||"n";
+  const o=[["n","Night 1, 2, 3…"],["t0","Today ("+td+")"],["t1","Tomorrow ("+tm+")"]].concat([1,2,3,4,5,6,0].map(w=>["w"+w,"Next "+["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"][w]]));
+  return o.map(([k,l])=>`<option value="${k}" ${k===st?"selected":""}>${l}</option>`).join("")}
+
+/* ---------- render ---------- */
+let CUR=null;
+function renderAll(){refreshTables();renderPlan();renderList();}
+function normPlan(){if(!S.plan.length)return;S.plan=S.plan.map(x=>(x!=null&&R[x])?x:null);while(S.plan.length<S.nights)S.plan.push(null);S.plan=S.plan.slice(0,S.nights);for(let d=0;d<S.nights;d++)if(isOut(d))S.plan[d]=null}
+function planDetail(){normPlan();if(!S.plan.length||S.plan.every(x=>x==null))return null;return evaluate(S.plan,true)}
+function peopleText(N){const ps=[...new Set(Array.from({length:N},(_,d)=>ppOf(d)))].sort((a,b)=>a-b);return ps.length===1?"for "+ps[0]:"for "+ps[0]+" to "+ps[ps.length-1]+" people"}
+function renderPlan(){
+  const el=$("#planPanel");
+  const D=CUR=planDetail();
+  if(!D){
+    el.innerHTML=`<h2 id="planH" class="sr">Your dinners</h2><div class="empty"><b>A week of dinners from one shop.</b><span>Choose how many nights, a rough spend and who's eating, then plan. The Kitchen picks recipes that share their fresh ingredients, so one shop covers every night and little goes in the bin.</span></div>`;
+    return}
+  const N=S.plan.length;const NC=S.plan.filter(x=>x!=null).length;
+  // per-item day usage
+  const usage={};S.plan.forEach((ix,d)=>{if(ix==null)return;const r=R[ix];for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(PAN[i])continue;(usage[i]=usage[i]||[]).push(d)}});
+  const freshLines=D.lines.filter(l=>!ITEMS[l.i].p||!PAN[l.i]);
+  const rows=freshLines.slice().sort((a,b)=>(b.uses-a.uses)||(SECTIONS.indexOf(ITEMS[a.i].s)-SECTIONS.indexOf(ITEMS[b.i].s))||ITEMS[a.i].n.localeCompare(ITEMS[b.i].n));
+  const multi=rows.filter(l=>l.uses>1).length;
+  const over=D.cost-budget();
+  const WORDS=["No","One","Two","Three","Four","Five","Six","Seven"];
+  const pps=[...new Set(Array.from({length:N},(_,d)=>ppOf(d)).filter((_,d)=>S.plan[d]!=null))].sort((a,b)=>a-b);
+  const forWho=pps.length===1?(pps[0]===1?"for one":"for "+(WORDS[pps[0]]||pps[0]).toLowerCase()):"for "+pps[0]+" to "+pps[pps.length-1];
+  let h=`<div class="headline"><h2 id="planH">${WORDS[NC]||NC} dinner${NC===1?"":"s"} ${forWho}${NC<N?`, over ${(WORDS[N]||N).toLowerCase()} nights`:""}.<span class="shop">One shop, ${money(D.cost)}.</span></h2></div>
+  <div class="facts"><span>About <b>${money(D.cost/Math.max(1,NC))}</b> a dinner</span><span><b>${rows.length}</b> things to buy, <b>${multi}</b> used more than once</span>
+  ${D.waste>0.5?`<span>Fresh leftovers about <b>${money(D.waste)}</b></span>`:`<span>Almost no fresh leftovers</span>`}
+  ${D.keep>0.5?`<span><b>${money(D.keep)}</b> of it keeps for later</span>`:""}</div>`;
+  if(over>1)h+=`<div class="warn">This is the cheapest mix found for these settings, about ${money0(over)} over your ${money0(budget())}. Fewer people, a looser diet setting, or fewer “leave out” items will bring it down.</div>`;
+  // the score: one staff line per ingredient, notes on the nights it's used, slurs joining them
+  const pct=d=>((d+0.5)/N*100).toFixed(3)+"%";
+  h+=`<div class="sec-h"><h3>Where each ingredient goes</h3><p>Read across: each line is something you buy, each note a night it's cooked. Tap a line to find its dinners.</p></div><div class="score" style="--n:${N}">`;
+  h+=`<div class="sc-head"><span></span><div class="sc-track">`;
+  for(let d=0;d<N;d++){const L=dayLabel(d);h+=`<span class="sc-lab ${isOut(d)?"out":""}" style="left:${pct(d)}"><b>${(S.start||"n")==="n"?L.big:L.h1}</b><small>${isOut(d)?"out":((S.start||"n")==="n"?"":L.h2)}</small></span>`}
+  h+=`</div></div>`;
+  for(const l of rows){const it=ITEMS[l.i];const ds=(usage[l.i]||[]).slice().sort((a,b)=>a-b);
+    let slur="";if(ds.length>1){let p="";for(let k=0;k<ds.length-1;k++){const x1=(ds[k]+0.5)/N*1000,x2=(ds[k+1]+0.5)/N*1000,mid=(x1+x2)/2;p+=`M${x1.toFixed(1)} 11 Q${mid.toFixed(1)} -3 ${x2.toFixed(1)} 11 `}
+      slur=`<svg class="slur" viewBox="0 0 1000 34" preserveAspectRatio="none" aria-hidden="true"><path d="${p}"/></svg>`}
+    h+=`<div class="sc-row ${l.uses>1?"multi":"single"}" data-item="${l.i}" role="button" tabindex="0" aria-label="${esc(it.n)}, used ${ds.length===1?"once":ds.length+" times"}"><span class="sc-name" title="${esc(it.n)}">${esc(it.n)}${l.uses>1?`<small>${l.uses}×</small>`:""}</span><div class="sc-track">${slur}${ds.map(d=>`<span class="note" style="left:${pct(d)}"></span>`).join("")}</div></div>`}
+  // bar lines and rests, laid over the track area
+  h+=`<div class="bars" style="left:var(--trackL)">${Array.from({length:N-1},(_,d)=>`<i style="left:${((d+1)/N*100).toFixed(3)}%"></i>`).join("")}</div>`;
+  for(let d=0;d<N;d++)if(isOut(d))h+=`<div class="rest" style="left:calc(var(--trackL) + (100% - var(--trackL)) * ${d/N});width:calc((100% - var(--trackL)) / ${N})"></div>`;
+  h+=`</div><div class="score-key"><span><i></i>Shared with another dinner</span><span><i class="h"></i>Used once</span>${S.out&&S.out.some(Boolean)?`<span><i class="r"></i>Night out</span>`:""}</div>`;
+  // days
+  h+=`<div class="sec-h"><h3>The dinners</h3><p>In order of what spoils first. Fish and soft herbs early, beans and stews later.</p></div><div class="days">`;
+  S.plan.forEach((ix,d)=>{const L=dayLabel(d);
+    if(ix==null){
+      if(isOut(d)){h+=`<article class="day out"><div class="when"><b>${L.big}</b><span>${L.small}</span></div><div><h4>Out tonight</h4><div class="meta">No cooking. Dinners after this are planned knowing the food has waited an extra night.</div></div><div class="dayacts"><button type="button" data-out="${d}">Cook tonight after all</button></div></article>`;return}
+      h+=`<article class="day unplanned"><div class="when"><b>${L.big}</b><span>${L.small}</span></div><div><h4>Not planned yet</h4><div class="meta">Fill this night with the best fit for the shop.</div></div><div class="dayacts"><button type="button" data-fill="${d}">Fill this night</button><button type="button" data-out="${d}">I'm out</button></div></article>`;return}
+    const r=R[ix];
+    const fr=[],pa=[],hv=[];for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(HAVE[i]){hv.push(i);continue}if(PAN[i]){pa.push(i);continue}fr.push(i)}
+    const sh=fr.filter(i=>(usage[i]||[]).length>1),only=fr.filter(i=>(usage[i]||[]).length<=1);
+    // attributed cost
+    let ac=0;for(let j=0;j<r.ui.length;j++){const i=r.ui[j];if(PAN[i])continue;const l=D.lines.find(x=>x.i===i);if(l&&l.need>0)ac+=l.cost*(r.ua[j]*ppOf(d)/l.need)}
+    const tips=[];for(const i of fr){const it=ITEMS[i];if(!it.f&&it.l<60&&d>=it.l)tips.push(`The ${it.n.toLowerCase()} will be ${d} days old by now, past its best. Check it, or swap this dinner earlier.`);if(it.f&&it.l<d+1&&(MEAT.has(it.id)||["whitefish","salmon","prawn","mussels"].includes(it.id)))tips.push(`Freeze the ${it.n.toLowerCase()} when you get home and move it to the fridge the night before.`)}
+    h+=`<article class="day ${S.locks[d]?"locked":""}"><div class="when"><b>${L.big}</b><span>${L.small}</span></div><div>
+      <h4><button type="button" data-open="${ix}">${esc(r.n)}</button>${S.locks[d]?`<span class="kept">kept</span>`:""}</h4>
+      <div class="meta">${r.cu?esc(CUNAME[r.cu])+", ":""}${esc(r.ty==="Other"?"":r.ty)}${r.ty!=="Other"&&r.pr?", ":""}${r.pr?esc(PROT_NAME[r.pr]||""):""}${r.ty!=="Other"||r.pr?", ":""}about ${money(ac)} of the shop</div>
+      <div class="shares">${hv.map(i=>`<span class="h">${esc(ITEMS[i].n)}, have it</span>`).join("")}${sh.map(i=>`<span class="s">${esc(ITEMS[i].n)}</span>`).join("")}${only.map(i=>`<span class="n">${esc(ITEMS[i].n)}</span>`).join("")}</div>
+      ${tips.map(t=>`<div class="tip">${esc(t)}</div>`).join("")}
+    </div><div class="dayacts"><button type="button" data-sim="${d}">Similar</button><button type="button" data-swap="${d}">Swap</button><button type="button" data-lock="${d}" aria-pressed="${!!S.locks[d]}">${S.locks[d]?"Kept":"Keep"}</button><button type="button" data-open="${ix}" data-day="${d}">Recipe</button><button type="button" data-out="${d}">I'm out</button><select class="cusel ${cuOf(d)?"set":""}" data-cu="${d}" aria-label="Cuisine for ${L.name}">${cuOptions(cuOf(d))}</select><span class="dpp">Cooking for<span class="stepper"><button type="button" data-ppm="${d}" aria-label="Fewer people on ${L.name}">−</button><output>${ppOf(d)}</output><button type="button" data-ppp="${d}" aria-label="More people on ${L.name}">+</button></span></span></div></article>`});
+  h+=`</div><p class="listnote" style="margin-top:16px">Similar switches to a close match of the same dish. Swap lets you choose anything. Keep holds a dinner in place when you re-plan.</p>`;
+  el.innerHTML=h;
+  el.querySelectorAll("[data-open]").forEach(b=>b.onclick=()=>openRecipe(+b.dataset.open,S.plan.indexOf(+b.dataset.open)));
+  el.querySelectorAll("[data-out]").forEach(b=>b.onclick=()=>setOut(+b.dataset.out,!isOut(+b.dataset.out)));
+  el.querySelectorAll("[data-fill]").forEach(b=>b.onclick=()=>fillSlot(+b.dataset.fill,true));
+  el.querySelectorAll("select[data-cu]").forEach(sel=>sel.onchange=()=>setCuisine(+sel.dataset.cu,sel.value));
+  el.querySelectorAll("[data-sim]").forEach(b=>b.onclick=()=>switchSimilar(+b.dataset.sim));
+  const setPP=(d,v)=>{S.ppl=S.ppl||[];v=Math.max(1,Math.min(10,v));S.ppl[d]=v===S.people?null:v;save();renderAll()};
+  el.querySelectorAll("[data-ppm]").forEach(b=>b.onclick=()=>setPP(+b.dataset.ppm,ppOf(+b.dataset.ppm)-1));
+  el.querySelectorAll("[data-ppp]").forEach(b=>b.onclick=()=>setPP(+b.dataset.ppp,ppOf(+b.dataset.ppp)+1));
+  el.querySelectorAll("[data-swap]").forEach(b=>b.onclick=()=>openSwap(+b.dataset.swap));
+  el.querySelectorAll("[data-lock]").forEach(b=>b.onclick=()=>{const d=+b.dataset.lock;S.locks[d]=!S.locks[d];save();renderPlan();syncControls()});
+    const sc=el.querySelector(".score");
+  if(sc){const setL=()=>{const t=sc.querySelector(".sc-row .sc-track,.sc-head .sc-track");if(t)sc.style.setProperty("--trackL",(t.getBoundingClientRect().left-sc.getBoundingClientRect().left)+"px")};setL();
+    if(window.ResizeObserver){new ResizeObserver(setL).observe(sc)}
+    const arts=[...el.querySelectorAll(".days .day")];
+    const pick=row=>{const was=row.classList.contains("hl");sc.querySelectorAll(".hl").forEach(x=>x.classList.remove("hl"));arts.forEach(a=>a.classList.remove("hlday"));sc.classList.remove("dim");if(was)return;
+      row.classList.add("hl");sc.classList.add("dim");const i=+row.dataset.item;
+      S.plan.forEach((ix,d)=>{if(ix!=null&&R[ix].ui.includes(i)&&arts[d])arts[d].classList.add("hlday")})};
+    sc.querySelectorAll(".sc-row").forEach(row=>{row.onclick=()=>pick(row);row.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();pick(row)}}})}
+}
+function qtyText(l){const it=ITEMS[l.i];const n=l.packs;
+  if(it.y==="each")return `${n}`;
+  if(it.y==="bunch")return `${n} bunch${n>1?"es":""}`;
+  return `${n} × ${it.y}`}
+function useText(l){const it=ITEMS[l.i];const v=l.need;
+  if((it.b==="g"||it.b==="ml")&&v<10)return "a little";
+  if(it.b==="g")return v>=1000?(v/1000).toFixed(1)+"kg":Math.round(v/10)*10+"g";
+  if(it.b==="ml")return v>=1000?(v/1000).toFixed(1)+"L":Math.round(v/10)*10+"ml";
+  const r=Math.round(v*4)/4;return (it.y==="bunch"||it.y==="pack"||it.y==="stalk/pack")?(r<=0.25?"a little":r<1?"part of one":r+""):(r<1?"part of one":(r%1?r.toFixed(2).replace(/0$/,""):r)+"")}
+function leftText(l){const it=ITEMS[l.i];const f=l.left/it.k;if(f<0.2)return "";
+  if(l.keeps)return f>=0.9&&l.packs===1?"most of it keeps":"rest keeps";
+  return f>=0.75?"most of it left over":f>=0.4?"about half left over":"a little left over"}
+function renderList(){
+  const el=$("#listPanel");
+  if(!CUR){el.innerHTML=`<h2 id="listH">Shopping list</h2><p class="listnote">Plan some dinners and the list builds itself here, grouped by section.</p>`;return}
+  const usage={};S.plan.forEach((ix,d)=>{if(ix==null)return;const r=R[ix];for(let j=0;j<r.ui.length;j++){const i=r.ui[j];(usage[i]=usage[i]||[]).push(d)}});
+  const by={};for(const l of CUR.lines)(by[ITEMS[l.i].s]=by[ITEMS[l.i].s]||[]).push(l);
+  const done=CUR.lines.filter(l=>S.ticks[ITEMS[l.i].id]).length;
+  let h=`<div class="listhead"><h2 id="listH">Shopping list</h2><span class="money">${money(CUR.cost)}</span></div>
+  <p class="listnote">${CUR.lines.length} items, ${done} ticked. Prices are rough Woolworths estimates; tap a price to correct it and the plan will use yours.</p>`;
+  for(const sec of SECTIONS){const ls=by[sec];if(!ls)continue;ls.sort((a,b)=>ITEMS[a.i].n.localeCompare(ITEMS[b.i].n));
+    h+=`<div class="sec"><header><h3>${esc(sec)}</h3><input class="aisle" aria-label="Aisle for ${esc(sec)}" placeholder="aisle" value="${esc(S.aisles[sec]||"")}" data-aisle="${esc(sec)}"></header>`;
+    for(const l of ls){const it=ITEMS[l.i];const tk=!!S.ticks[it.id];const ds=(usage[l.i]||[]).map(d=>(S.start||"n")==="n"?String(d+1):dayLabel(d).name);const lt=leftText(l);
+      h+=`<div class="row ${tk?"done":""}"><input type="checkbox" id="tk${l.i}" ${tk?"checked":""} data-tick="${it.id}"><label for="tk${l.i}" class="nm">${esc(it.n)}</label><span class="lead" aria-hidden="true"></span>
+      <button type="button" class="pr" data-price="${l.i}" aria-label="Edit price of ${esc(it.n)}">${money(l.cost)}</button>
+      <div class="dd">${esc(qtyText(l))}, using ${esc(useText(l))}. ${(S.start||"n")==="n"?"Night"+(ds.length>1?"s ":" "):""}${ds.join(", ")}${lt?`, <em>${lt}</em>`:""}</div></div>`}
+    h+=`</div>`}
+  // pantry used
+  const PL=S.plan.filter(x=>x!=null);
+  const pu=[...new Set(PL.flatMap(ix=>Array.from(R[ix].ui).filter(i=>PAN[i]&&!HAVE[i])))].map(i=>ITEMS[i].n).sort();
+  const hu=[...new Set(PL.flatMap(ix=>Array.from(R[ix].ui).filter(i=>HAVE[i])))].map(i=>ITEMS[i].n).sort();
+  if(hu.length)h+=`<div class="pantryuse"><b>You said you have (not on the list)</b>${esc(hu.join(", "))}. Check you have enough for every night it's used.</div>`;
+  h+=`<div class="pantryuse"><b>From your pantry (not on the list)</b>${esc(pu.join(", "))}. If you're out of any of these, add them to the shop. <button type="button" class="linkbtn" id="pantryBtn2">Edit pantry</button></div>
+  <div class="listacts"><button type="button" class="btn2" id="copyList">Copy list</button><button type="button" class="btn2" id="clearTicks">Untick all</button></div>`;
+  el.innerHTML=h;
+  el.querySelectorAll("[data-tick]").forEach(c=>c.onchange=()=>{S.ticks[c.dataset.tick]=c.checked;save();c.closest(".row").classList.toggle("done",c.checked);const n=CUR.lines.filter(l=>S.ticks[ITEMS[l.i].id]).length;el.querySelector(".listnote").firstChild.textContent=`${CUR.lines.length} items, ${n} ticked. Prices are rough Woolworths estimates; tap a price to correct it and the plan will use yours.`});
+  el.querySelectorAll("[data-aisle]").forEach(a=>a.onchange=()=>{S.aisles[a.dataset.aisle]=a.value.trim();save()});
+  el.querySelectorAll("[data-price]").forEach(b=>b.onclick=()=>editPrice(b,+b.dataset.price));
+  $("#pantryBtn2").onclick=openPantry;
+  $("#copyList").onclick=copyList;
+  $("#clearTicks").onclick=()=>{S.ticks={};save();renderList()};
+}
+function editPrice(btn,i){const it=ITEMS[i];const inp=document.createElement("input");inp.className="pr-in";inp.inputMode="decimal";inp.value=priceOf(i).toFixed(2);inp.setAttribute("aria-label",`Price per ${it.y} of ${it.n}`);
+  btn.replaceWith(inp);inp.focus();inp.select();
+  const fin=()=>{const v=parseFloat(inp.value.replace(/[^0-9.]/g,""));if(!isNaN(v)&&v>=0){S.prices[it.id]=v;save();toast(`${it.n}: ${money(v)} per ${it.y}`)}renderAll()};
+  inp.addEventListener("blur",fin,{once:true});inp.addEventListener("keydown",e=>{if(e.key==="Enter")inp.blur();if(e.key==="Escape"){inp.value=priceOf(i);inp.blur()}})}
+function copyList(){
+  const by={};for(const l of CUR.lines)(by[ITEMS[l.i].s]=by[ITEMS[l.i].s]||[]).push(l);
+  let t=`Shopping list, ${S.plan.filter(x=>x!=null).length} dinners, about ${money(CUR.cost)}\n`;
+  for(const sec of SECTIONS){if(!by[sec])continue;t+=`\n${sec}${S.aisles[sec]?" (aisle "+S.aisles[sec]+")":""}\n`;for(const l of by[sec])t+=`[ ] ${ITEMS[l.i].n}: ${qtyText(l)}\n`}
+  t+=`\nDinners\n`+S.plan.map((ix,d)=>`${dayLabel(d).name}: ${ix==null?(isOut(d)?"out":"not planned"):R[ix].n}`).join("\n");
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast("List copied")).catch(()=>{const ta=document.createElement("textarea");ta.value=t;document.body.appendChild(ta);ta.select();try{document.execCommand("copy");toast("List copied")}catch(e){}ta.remove()})}
+
+/* ---------- recipe sheet ---------- */
+function openRecipe(ix,d){const P=d>=0?ppOf(d):S.people;
+  const r=R[ix];const usage={};S.plan.forEach(x=>{if(x==null)return;for(const i of R[x].ui)usage[i]=(usage[i]||0)+1});
+  const lines=r.i.map((line,k)=>{let tag="";const i=r.m?r.m[k]:-1;
+    if(i>=0)tag=PAN[i]?`<span class="badge p">pantry</span>`:(usage[i]>1?`<span class="badge s">shared</span>`:"");
+    return `<li><span>${esc(line)}</span>${tag}</li>`}).join("");
+  const scale=P/r.sv;
+  $("#recipeSheet").innerHTML=`<header><div><h2>${esc(r.n)}</h2><p>${esc(r.src)}. Written for about ${r.sv}; you're cooking for ${P}${Math.abs(scale-1)>0.15?`, so use roughly ${scale<1?Math.round(scale*100)+"%":"×"+scale.toFixed(1)} of each amount`:""}. The shopping list is already scaled.</p></div><button class="x" type="button" aria-label="Close">×</button></header>
+  <div class="body"><h3>Ingredients</h3><ul class="ings">${lines}</ul><h3>Method</h3><ol class="steps">${r.s.map(s=>`<li>${esc(s.replace(/^\s*(step\s*)?\d+[.):]\s*/i,""))}</li>`).join("")}</ol></div>`;
+  const dlg=$("#dlgRecipe");$("#recipeSheet .x").onclick=()=>dlg.close();dlg.showModal();$("#recipeSheet .body").scrollTop=0;
+}
+
+/* ---------- out nights ---------- */
+function fillSlot(d,announce){
+  buildPool();const slots=S.plan.slice();slots[d]=null;
+  const cands=candidates(slots,400,cuOf(d));
+  let best=null,bo=Infinity;for(const ix of cands){if(slots.includes(ix))continue;const tr=slots.slice();tr[d]=ix;const o=evaluate(tr);if(o<bo){bo=o;best=ix}}
+  if(best==null){toast("Nothing fits that night with these settings");return}
+  S.plan[d]=best;S.locks[d]=false;save();renderAll();syncControls();
+  if(announce)toast(`${dayLabel(d).name}: ${R[best].n}`);
+}
+function setOut(d,v){
+  S.out=S.out||[];S.out[d]=v;
+  if(S.plan.length){normPlan();
+    if(v){const was=S.plan[d];S.plan[d]=null;S.locks[d]=false;save();renderAll();syncControls();
+      if(was!=null)toast(`${dayLabel(d).name} is out. Re-plan to rebalance the other nights around it.`)}
+    else{save();fillSlot(d,true)}
+  }else{save();syncControls()}
+}
+/* ---------- cuisine per night ---------- */
+function setCuisine(d,c){
+  S.cui=S.cui||[];S.cui[d]=c;save();
+  if(S.plan.length===S.nights&&S.plan[d]!=null&&c&&R[S.plan[d]].cu!==c){
+    buildPool();
+    const cands=candidates((()=>{const x=S.plan.slice();x[d]=null;return x})(),400,c);
+    if(!cands.length){toast(`No ${CUNAME[c]} dinners fit your other settings`);S.cui[d]="";save();syncControls();renderAll();return}
+    let best=null,bo=Infinity;for(const ix of cands){const tr=S.plan.slice();tr[d]=ix;const o=evaluate(tr);if(o<bo){bo=o;best=ix}}
+    S.plan[d]=best;S.locks[d]=false;if(SIMSEEN[d])delete SIMSEEN[d];save();
+    toast(`${dayLabel(d).name}: ${R[best].n}`);
+  }
+  syncControls();renderAll();
+}
+/* ---------- similar ---------- */
+let SIMSEEN={};
+const STOP=new Set(["with","and","the","a","of","in","on","easy","best","my","style","recipe","quick","simple","homemade","i","ii","iii","iv","slow","cooker","s","mom","grandma","s"]);
+const words=t=>new Set(t.replace(/[^a-z ]/g," ").split(/\s+/).filter(w=>w.length>2&&!STOP.has(w)));
+function switchSimilar(d){
+  buildPool();
+  const cur=S.plan[d];const r=R[cur];
+  const seen=SIMSEEN[d]=SIMSEEN[d]||[cur];if(!seen.includes(cur))seen.push(cur);
+  const A=new Set(r.ui),wa=words(r.lc);
+  let best=-1,bs=-1;
+  const want=cuOf(d);
+  for(const ix of POOL){if(seen.includes(ix)||S.plan.includes(ix))continue;const q=R[ix];if(want&&q.cu!==want)continue;
+    let inter=0;for(const i of q.ui)if(A.has(i))inter++;
+    if(inter<2)continue;
+    const jac=inter/(A.size+q.ui.length-inter);
+    let tw=0;const wb=words(q.lc);for(const w of wb)if(wa.has(w))tw++;
+    const sc=jac+(q.pr===r.pr?0.3:0)+(q.ty===r.ty?0.15:0)+Math.min(tw,3)*0.12;
+    if(sc>bs){bs=sc;best=ix}}
+  if(best<0){toast("No close match left. Try Swap instead");return}
+  const before=evaluate(S.plan);const bcost=evaluate(S.plan,true).cost;
+  S.plan[d]=best;seen.push(best);save();renderAll();
+  const delta=CUR.cost-bcost;
+  toast(`${R[best].n} (${delta>=0?"+":"−"}${money(Math.abs(delta))} on the shop)`);
+}
+/* ---------- swap sheet ---------- */
+function openSwap(d){
+  buildPool();
+  const slotsWo=S.plan.slice();slotsWo[d]=null;const others=S.plan.filter((x,j)=>j!==d&&x!=null);
+  const base=evaluate(S.plan,true);
+  const dlg=$("#dlgSwap");
+  let cuF=cuOf(d);
+  const draw=(q)=>{
+    let cands;
+    if(q){const qq=q.toLowerCase();cands=POOL.filter(ix=>R[ix].lc.includes(qq)&&!others.includes(ix)&&(!cuF||R[ix].cu===cuF)).slice(0,400)}
+    else if(cuF){cands=candidates(slotsWo,500,cuF)}
+    else{const s=new Set();for(const ix of others){const r=R[ix];for(const i of r.ui){if(INV[i])for(const c of INV[i])s.add(c)}}
+      s.delete(S.plan[d]);others.forEach(o=>s.delete(o));cands=[...s];if(cands.length<60)cands=cands.concat(candidates(slotsWo,200))}
+    const scored=cands.map(ix=>{const full=S.plan.slice();full[d]=ix;const e=evaluate(full,true);return {ix,delta:e.cost-base.cost,obj:e.obj,e}});
+    scored.sort((a,b)=>q?(a.delta-b.delta):(a.obj-b.obj));
+    const planItems=new Set(others.flatMap(ix=>Array.from(R[ix].ui).filter(i=>!PAN[i])));
+    const top=scored.filter(s=>s.ix!==S.plan[d]).slice(0,40);
+    $("#altList").innerHTML=top.length?top.map(s=>{const r=R[s.ix];const fr=Array.from(r.ui).filter(i=>!PAN[i]);const reuse=fr.filter(i=>planItems.has(i)).length;const fresh=fr.filter(i=>!planItems.has(i)).map(i=>ITEMS[i].n.toLowerCase());
+      return `<li><button type="button" data-pick="${s.ix}"><span class="t">${esc(r.n)}</span><span class="d ${s.delta<0?"neg":""}">${s.delta>=0?"+":"−"}${money(Math.abs(s.delta))}</span><span class="w">${r.cu?esc(CUNAME[r.cu])+". ":""}Uses ${reuse} thing${reuse===1?"":"s"} already on the list${fresh.length?`; adds ${esc(fresh.slice(0,4).join(", "))}${fresh.length>4?" and more":""}`:""}</span></button></li>`}).join(""):`<li class="listnote" style="padding:16px 4px">No matches in your current settings.</li>`;
+    $("#altList").querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{S.plan[d]=+b.dataset.pick;S.locks[d]=true;S.cui=S.cui||[];S.cui[d]=cuF;if(SIMSEEN[d])delete SIMSEEN[d];save();dlg.close();renderAll();syncControls();toast("Swapped and kept in place")});
+  };
+  const L=dayLabel(d);
+  $("#swapSheet").innerHTML=`<header><div><h2>Swap the dinner for ${L.name}</h2><p>Instead of ${esc(R[S.plan[d]].n)}. The price is how much the whole shop changes.</p></div><button class="x" type="button" aria-label="Close">×</button></header>
+  <div class="body"><label class="sr" for="swapQ">Search recipes</label><input class="txt" id="swapQ" type="search" placeholder="Search, e.g. laksa, meatballs, risotto"><div style="margin-top:8px"><label class="sr" for="swapCu">Cuisine</label><select class="cusel set" id="swapCu" style="padding:7px 8px">${cuOptions(cuF)}</select></div><ul class="alts" id="altList"></ul></div>`;
+  $("#swapSheet .x").onclick=()=>dlg.close();
+  $("#swapCu").onchange=e=>{cuF=e.target.value;draw($("#swapQ").value.trim())};
+  let tm;$("#swapQ").oninput=e=>{clearTimeout(tm);tm=setTimeout(()=>draw(e.target.value.trim()),180)};
+  draw("");dlg.showModal();
+}
+
+/* ---------- pantry sheet ---------- */
+function openPantry(){
+  const dlg=$("#dlgPantry");
+  const draw=(q)=>{const qq=(q||"").toLowerCase();let h="";
+    for(const sec of ["Pantry staples","Spices",...SECTIONS.filter(s=>s!=="Pantry staples"&&s!=="Spices")]){
+      const its=ITEMS.map((it,i)=>[it,i]).filter(([it])=>it.s===sec&&(!qq||it.n.toLowerCase().includes(qq)));
+      if(!its.length)continue;
+      h+=`<div class="pgroup"><h3>${esc(sec)}</h3>`+its.map(([it,i])=>`<label class="prow"><input type="checkbox" data-pan="${it.id}" ${inPantry(i)?"checked":""}> ${esc(it.n)}<small>${it.p?"assumed":""}</small></label>`).join("")+`</div>`}
+    $("#panList").innerHTML=h||`<p class="listnote">Nothing matches.</p>`;
+    $("#panList").querySelectorAll("[data-pan]").forEach(c=>c.onchange=()=>{const it=ITEMS[IDX[c.dataset.pan]];if(!!it.p===c.checked)delete S.pantry[it.id];else S.pantry[it.id]=c.checked;save();renderAll();syncControls()})};
+  $("#pantrySheet").innerHTML=`<header><div><h2>Your pantry</h2><p>Ticked items are things you already have. They stay off the shopping list and don't count toward the price. Tick anything else you've got on hand (half a bag of pasta, frozen peas) and re-plan to use it.</p></div><button class="x" type="button" aria-label="Close">×</button></header>
+  <div class="body"><label class="sr" for="panQ">Find an ingredient</label><input class="txt" id="panQ" type="search" placeholder="Find an ingredient"><div class="listacts"><button type="button" class="btn2" id="panReset">Back to the standard pantry</button></div><div id="panList"></div></div>`;
+  $("#pantrySheet .x").onclick=()=>dlg.close();
+  $("#panQ").oninput=e=>draw(e.target.value.trim());
+  $("#panReset").onclick=()=>{S.pantry={};save();draw($("#panQ").value);renderAll();syncControls()};
+  draw("");dlg.showModal();
+}
+let tt;function toast(m){const t=$("#toast");t.textContent=m;t.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>t.classList.remove("show"),2200)}
+if("serviceWorker" in navigator&&location.protocol.startsWith("http")&&!location.hostname.endsWith("claude.ai"))navigator.serviceWorker.register("sw.js").catch(()=>{});
+boot();
+</script>
+</body>
+</html>

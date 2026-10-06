@@ -22,14 +22,29 @@ Choose how many nights the shop covers (1 to 7), a rough spend per dinner, and w
 
 ## Run it
 
-Open `index.html` in any current browser. It is a single self-contained file of about 11 MB with no server or install. Fonts load from Google Fonts when online.
+Open `index.html` in any current browser. Everything the app needs, including all the recipes, is inside that one file of about 11 MB. Fonts load from Google Fonts when online.
+
+Once hosted on GitHub Pages it also installs as an app on a phone or computer: it opens full screen from its own icon and works offline, so the list still opens in a supermarket with no reception.
 
 ## Publish with GitHub Pages
 
 1. Create a new repository called `the-kitchen` on GitHub.
-2. Upload the contents of this folder (`index.html`, `README.md`, `.gitignore` and the `build` folder). At about 11 MB, `index.html` is under GitHub's 25 MB web-upload limit, so drag and drop works.
+2. Upload everything in this folder so `index.html` sits at the top level: `index.html`, `manifest.webmanifest`, `sw.js`, the four icon files, `README.md`, `.gitignore` and the `build` folder. At about 11 MB, `index.html` is under GitHub's 25 MB web-upload limit, so drag and drop works. (On a Mac, `.gitignore` is hidden in Finder; press Cmd+Shift+. to show it.)
 3. In the repository, go to **Settings > Pages**, set **Source** to *Deploy from a branch*, choose `main` and `/ (root)`, and save.
 4. After a minute or two the app is live at `https://<your-username>.github.io/the-kitchen/`.
+
+## Install it on a phone
+
+- **iPhone:** open the link in Safari (not inside Instagram, Facebook or another app's browser), tap Share, then **Add to Home Screen**.
+- **Android:** open the link in Chrome, tap the three-dot menu, then **Install app** or **Add to Home screen**.
+
+The first visit downloads the app once; after that it opens from the phone, online or not.
+
+On an iPhone, the home-screen app keeps its own storage, separate from Safari. Always open it from the icon, or your plan and ticked items will seem to be missing.
+
+## Updating
+
+Upload the new `index.html` and commit. Installed copies check for it whenever they open with a connection and switch to it the time after. If you change `sw.js` or the icons, also change `VERSION` at the top of `sw.js` (for example `kitchen-v2`) so phones replace their saved copy.
 
 ## Rebuild the data
 
@@ -54,6 +69,8 @@ It needs Python 3 and `curl`. It downloads about 50 MB of source data (ignored b
 | `export_items.py` | Writes the ingredient table for the app |
 | `inject.py` | Compresses the data into `template.html` to produce `index.html` |
 | `template.html` | The app itself: layout, styles and planner |
+
+`manifest.webmanifest`, `sw.js` and the icons sit next to `index.html` and are not touched by the build.
 
 To change prices or pack sizes permanently, edit `items.py` and rebuild. For quick changes, tap any price in the app's shopping list instead.
 
